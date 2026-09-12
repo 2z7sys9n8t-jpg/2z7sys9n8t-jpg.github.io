@@ -289,9 +289,9 @@ window.CC = (function(){
   // key = identità stabile del negozio (finisce nei codici e negli id); nome = come lo si vede.
   // Per rinominare un negozio si cambia solo "nome". Le chiavi non vanno mai cambiate.
   var NEGOZI = [
-    {key:"bar-1",       nome:"Bar 1"},
-    {key:"bar-2",       nome:"Bar 2"},
-    {key:"tabaccheria", nome:"Tabaccheria"}
+    {key:"bar-1",       nome:"Q Cafe Viale EUR"},
+    {key:"bar-2",       nome:"Q Cafe 268"},
+    {key:"tabaccheria", nome:"Tabb"}
   ];
   function negozio(key){ for (var i = 0; i < NEGOZI.length; i++) if (NEGOZI[i].key === key) return NEGOZI[i]; return null; }
   function nomeNegozio(key){ var n = negozio(key); return n ? n.nome : String(key); }
