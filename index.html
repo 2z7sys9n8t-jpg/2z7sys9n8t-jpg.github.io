@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Chiusura Cassa</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Chiusura Cassa">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1c6b4a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%231c6b4a%27/%3E%3Ctext x=%2732%27 y=%2743%27 font-size=%2734%27 text-anchor=%27middle%27 fill=%27white%27 font-family=%27sans-serif%27 font-weight=%27700%27%3E%E2%82%AC%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+<noscript><p class="noscript">Questa pagina ha bisogno di JavaScript. Se la stai vedendo dentro WhatsApp o nell'anteprima di un allegato, salva il file e aprilo con Chrome o Safari — oppure usa il link della pagina.</p></noscript>
+<style>
+  :root{
+    --bg:#f3f4f1; --panel:#ffffff; --panel-2:#eef0ec; --ink:#17201b; --muted:#66716a;
+    --line:#dfe3de; --line-strong:#c3cac4;
+    --accent:#1c6b4a; --accent-ink:#ffffff; --accent-soft:#e3f0e9;
+    --warn:#b0561a; --warn-soft:#f9ece2;
+    --neg:#a8232d; --neg-soft:#f9e6e7; --neg-ink:#ffffff;
+    --shadow:0 1px 2px rgba(23,32,27,.05), 0 10px 28px rgba(23,32,27,.06);
+    --sans:"IBM Plex Sans", ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --r:12px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#141815; --panel:#1b201c; --panel-2:#222824; --ink:#e8ebe6; --muted:#93a097;
+      --line:#2b322d; --line-strong:#3b443e;
+      --accent:#5cc494; --accent-ink:#0f1a14; --accent-soft:#1a2f25;
+      --warn:#e6a26a; --warn-soft:#33251a;
+      --neg:#ef8b90; --neg-soft:#361d20; --neg-ink:#1a0d0e;
+      --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 28px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#141815; --panel:#1b201c; --panel-2:#222824; --ink:#e8ebe6; --muted:#93a097;
+    --line:#2b322d; --line-strong:#3b443e;
+    --accent:#5cc494; --accent-ink:#0f1a14; --accent-soft:#1a2f25;
+    --warn:#e6a26a; --warn-soft:#33251a;
+    --neg:#ef8b90; --neg-soft:#361d20; --neg-ink:#1a0d0e;
+    --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 28px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 var(--sans)}
+  .num{font-family:var(--mono); font-variant-numeric:tabular-nums}
+  .wrap{max-width:1100px; margin:0 auto; padding:18px 16px 40px}
+  .wrap.narrow{max-width:760px}
+  @media (max-width:860px){ .wrap{padding-bottom:104px} }
+
+  /* ---- testata ---- */
+  header{display:grid; grid-template-columns:1fr auto; gap:12px 18px; align-items:start; margin-bottom:16px}
+  @media (max-width:860px){ header{grid-template-columns:1fr} }
+  h1{font-size:20px; font-weight:600; margin:0; letter-spacing:-.01em; line-height:1.25; text-wrap:balance}
+  .subtitle{color:var(--muted); font-size:13px; margin-top:2px; display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .badge{display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:2px 9px; border-radius:999px; border:1px solid var(--line-strong); color:var(--muted)}
+  .badge::before{content:""; width:7px; height:7px; border-radius:50%; background:var(--line-strong)}
+  .badge.on{border-color:var(--accent); color:var(--accent)}
+  .badge.on::before{background:var(--accent)}
+  .controls{display:flex; gap:8px; flex-wrap:wrap; align-items:end}
+  .field{display:grid; gap:3px}
+  .field > span{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:600}
+  select,input[type=date],input[type=text],textarea{
+    font:inherit; color:var(--ink); background:var(--panel);
+    border:1px solid var(--line-strong); border-radius:9px; padding:7px 10px; min-height:38px;
+  }
+  select:focus,input:focus,textarea:focus,button:focus-visible,.tile:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
+  #nome{width:150px}
+
+  /* ---- griglia ---- */
+  .grid{display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:16px; align-items:start}
+  @media (max-width:860px){ .grid{grid-template-columns:minmax(0,1fr)} }
+  .col{display:grid; gap:16px}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:var(--r); padding:14px 16px}
+  .card.lift{box-shadow:var(--shadow)}
+  .card h2{font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--muted); margin:0 0 10px; font-weight:600; display:flex; justify-content:space-between; gap:8px; align-items:baseline}
+  .card h2 .meta{text-transform:none; letter-spacing:0; font-weight:500}
+
+  /* ---- tabella tagli ---- */
+  table.den{width:100%; border-collapse:collapse}
+  table.den th{font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:600; text-align:right; padding:0 6px 6px}
+  table.den th:first-child{text-align:left}
+  table.den td{padding:3px 6px; border-top:1px solid var(--line)}
+  table.den tr.sec td{border-top:none; padding:12px 6px 4px; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:600}
+  table.den tr.sec:first-child td{padding-top:2px}
+  .taglio{font-weight:500}
+  tr.zero .taglio{color:var(--muted)}
+  td.qty{width:104px}
+  td.qty input{width:100%; text-align:right; font:inherit; font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:16px;
+    color:var(--ink); background:var(--panel); border:1px solid var(--line-strong); border-radius:8px; padding:7px 9px; min-height:40px}
+  td.qty input::-webkit-outer-spin-button,td.qty input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  td.qty input[type=number]{-moz-appearance:textfield}
+  td.subtot{text-align:right; width:118px; color:var(--muted)}
+  td.subtot.on{color:var(--ink)}
+
+  /* ---- riepilogo ---- */
+  .rows{display:grid; gap:8px}
+  .row{display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .row label{color:var(--muted); font-size:14px}
+  .row input{width:132px; text-align:right; font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:16px}
+  .tots{margin-top:12px; border-top:1px solid var(--line)}
+  .tot{display:flex; justify-content:space-between; align-items:baseline; padding:8px 0; border-bottom:1px solid var(--line)}
+  .tot .k{color:var(--muted); font-size:14px}
+  .tot .v{font-weight:500; font-size:16px}
+  .verdict{margin-top:12px; border-radius:10px; padding:12px 14px; display:flex; justify-content:space-between; align-items:baseline; gap:10px}
+  .verdict .k{font-size:11px; text-transform:uppercase; letter-spacing:.08em; font-weight:600}
+  .verdict .v{font-size:26px; font-weight:600; letter-spacing:-.02em; line-height:1.1}
+  .v-ok{background:var(--accent-soft); color:var(--accent)}
+  .v-warn{background:var(--warn-soft); color:var(--warn)}
+  .v-neg{background:var(--neg-soft); color:var(--neg)}
+  .hint{font-size:12.5px; color:var(--muted); margin-top:8px; min-height:1.4em}
+  #nota{width:100%; margin-top:12px}
+
+  /* ---- bottoni ---- */
+  button{font:inherit; cursor:pointer; border-radius:9px; border:1px solid var(--line-strong); background:var(--panel); color:var(--ink); padding:9px 12px; min-height:38px}
+  button:hover{border-color:var(--muted)}
+  button.primary{background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600; width:100%; padding:12px; margin-top:10px}
+  button.primary:hover{filter:brightness(1.06)}
+  button[disabled]{opacity:.6; cursor:progress}
+  button.ghost{border:none; background:transparent; color:var(--muted); padding:4px 8px; font-size:13px; min-height:0}
+  button.ghost:hover{color:var(--ink)}
+  button.ghost.danger:hover{color:var(--neg)}
+  .btnrow{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap}
+  .btnrow button{flex:1 1 120px}
+  .textbox{display:none; margin-top:10px}
+  .textbox.show{display:block}
+  .textbox textarea{width:100%; min-height:150px; font:13px/1.45 var(--mono); color:var(--ink); background:var(--panel-2); border:1px solid var(--line); border-radius:9px; padding:10px; resize:vertical}
+  .textbox .help{font-size:12.5px; color:var(--muted); margin:6px 0 0}
+
+  /* ---- pillole e stati ---- */
+  .pill{display:inline-block; font-family:var(--mono); font-variant-numeric:tabular-nums; font-weight:600; padding:1px 8px; border-radius:999px; font-size:12px; white-space:nowrap}
+  .d-ok{background:var(--accent-soft); color:var(--accent)}
+  .d-warn{background:var(--warn-soft); color:var(--warn)}
+  .d-neg{background:var(--neg-soft); color:var(--neg)}
+  .d-none{background:var(--panel-2); color:var(--muted); border:1px solid var(--line)}
+
+  /* ---- elenco (registro / inviate) ---- */
+  .hist{max-height:380px; overflow:auto; margin:0 -6px}
+  .h-item{display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:8px; align-items:center; padding:8px 6px; border-top:1px solid var(--line); font-size:13px}
+  .h-item:first-child{border-top:none}
+  .h-when{font-weight:600}
+  .h-when .au{font-weight:400; color:var(--muted)}
+  .h-sub{color:var(--muted); font-size:12px; overflow-wrap:anywhere}
+  .h-act{display:flex; gap:2px}
+  .empty{color:var(--muted); font-size:13px; padding:8px 6px}
+
+  /* ---- barra fissa (telefono) ---- */
+  .stick{display:none}
+  @media (max-width:860px){
+    .stick{display:flex; position:fixed; left:0; right:0; bottom:0; z-index:5; gap:10px; align-items:center;
+      padding:10px 14px calc(10px + env(safe-area-inset-bottom)); background:var(--panel); border-top:1px solid var(--line); box-shadow:0 -8px 24px rgba(0,0,0,.08)}
+    .stick .sv{flex:1; display:grid; min-width:0}
+    .stick .sk{font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:600}
+    .stick .sd{font-size:20px; font-weight:600; letter-spacing:-.02em; line-height:1.1}
+    .stick button{width:auto; margin:0; padding:10px 18px; white-space:nowrap}
+    .stick.v-ok .sd{color:var(--accent)} .stick.v-warn .sd{color:var(--warn)} .stick.v-neg .sd{color:var(--neg)}
+  }
+
+  .toast{position:fixed; left:50%; bottom:22px; transform:translate(-50%,14px); opacity:0; transition:.22s;
+    background:var(--ink); color:var(--bg); padding:9px 15px; border-radius:999px; font-size:13px; pointer-events:none; z-index:9; max-width:90vw; text-align:center}
+  @media (max-width:860px){ .toast{bottom:100px} }
+  .toast.show{opacity:1; transform:translate(-50%,0)}
+  @media (prefers-reduced-motion: reduce){ .toast{transition:none} }
+
+  /* ---- finestra di conferma (sostituisce confirm(), bloccato nei visualizzatori) ---- */
+  .modal{position:fixed; inset:0; z-index:20; display:none; align-items:center; justify-content:center; padding:16px; background:rgba(0,0,0,.35)}
+  .modal.show{display:flex}
+  .modal .box{background:var(--panel); color:var(--ink); border:1px solid var(--line); border-radius:14px; padding:18px; max-width:420px; width:100%; box-shadow:var(--shadow)}
+  .modal .box p{margin:0 0 14px; white-space:pre-line}
+  .modal .acts{display:flex; gap:8px; justify-content:flex-end}
+  .modal .acts button{min-width:100px}
+  .modal .acts button.danger{background:var(--neg); border-color:var(--neg); color:var(--neg-ink)}
+  .modal .acts button.go{background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600}
+
+  @media print{
+    :root, :root[data-theme="dark"]{
+      --bg:#fff; --panel:#fff; --panel-2:#f2f2f2; --ink:#000; --muted:#555; --line:#ccc; --line-strong:#999;
+      --accent:#1c6b4a; --accent-soft:#eaf3ee; --warn:#8a4512; --warn-soft:#f6ede4; --neg:#8a1f27; --neg-soft:#f6e6e7; --shadow:none;
+    }
+    body{background:#fff; color:#000}
+    input,select,textarea,td.qty input{color:#000 !important; background:#fff !important}
+    .wrap{max-width:none; padding:0}
+    .no-print,.controls,.btnrow,button.primary,#toast,.stick,.badge,.modal{display:none !important}
+    .card{box-shadow:none; border-color:#bbb; break-inside:avoid}
+    .grid{grid-template-columns:1fr 300px}
+    tr.zero{display:none}
+    #nota{border:none; padding-left:0}
+  }
+
+  /* ---- telefono: niente zoom automatico (iOS ingrandisce sotto i 16px), righe toccabili ---- */
+  @media (max-width:860px){
+    input,select,textarea{font-size:16px}
+    #nome{width:140px}
+  }
+  table.den tbody tr:not(.sec){cursor:pointer}
+  .textbox textarea{font-size:16px; -webkit-user-select:text; user-select:text}
+  .textbox{-webkit-user-select:text; user-select:text}
+  /* barra fissa nascosta mentre si scrive: la tastiera la coprirebbe */
+  body.kb .stick, body.kb-vv .stick{display:none !important}
+  .note{font-size:13px; color:var(--muted); background:var(--panel-2); border:1px solid var(--line); border-radius:9px; padding:8px 12px}
+  .note.warn{color:var(--warn); background:var(--warn-soft); border-color:transparent}
+  .note.neg{color:var(--neg); background:var(--neg-soft); border-color:transparent}
+  .noscript{display:block; margin:0; padding:14px 16px; background:#fff3cd; color:#5c3d00; font:15px/1.5 -apple-system, Roboto, Arial, sans-serif}
+  body.readonly .card.lift, body.readonly .stick, body.readonly #card-import, body.readonly #card-count, body.readonly .btnrow, body.readonly .arch, body.readonly .controls{display:none !important}
+
+  .verdict .v{font-size:28px}
+</style>
+
+<div class="wrap narrow">
+  <header>
+    <div>
+      <h1>Chiusura Cassa</h1>
+      <div class="subtitle"><span id="sub"></span></div>
+    </div>
+    <div class="controls">
+      <label class="field"><span>Punto vendita</span><select id="shop"></select></label>
+      <label class="field"><span>Data di chiusura</span><input type="date" id="data"></label>
+      <label class="field"><span>Chi chiude</span><input type="text" id="nome" placeholder="Il tuo nome" autocomplete="off" autocapitalize="words"></label>
+      <button id="btn-theme" class="ghost" title="Chiaro / scuro" aria-label="Cambia tema" style="font-size:16px">◐</button>
+    </div>
+  </header>
+
+  <div class="col">
+    <div class="note warn" id="storage-note" hidden>Su questo telefono la pagina non può ricordare niente tra una volta e l'altra: il messaggio resta visibile qui sotto finché non chiudi la pagina.</div>
+
+    <section class="card lift">
+      <h2>Conteggio contanti</h2>
+      <table class="den">
+        <thead><tr><th>Taglio</th><th>Quantità</th><th>Subtotale</th></tr></thead>
+        <tbody id="den"></tbody>
+      </table>
+    </section>
+
+    <section class="card lift">
+      <h2>Riepilogo</h2>
+      <div class="rows">
+        <div class="row"><label for="fondo">Fondo cassa iniziale</label><input type="text" inputmode="decimal" id="fondo" placeholder="0,00"></div>
+        <div class="row"><label for="atteso">Incasso atteso (registratore)</label><input type="text" inputmode="decimal" id="atteso" placeholder="0,00"></div>
+        <div class="row"><label for="uscite">Uscite di cassa (spese)</label><input type="text" inputmode="decimal" id="uscite" placeholder="0,00"></div>
+      </div>
+      <div class="tots">
+        <div class="tot"><span class="k">Totale contato</span><span class="v num" id="t-contato">0,00 €</span></div>
+        <div class="tot"><span class="k">Incasso in contanti</span><span class="v num" id="t-netto">0,00 €</span></div>
+        <div class="tot"><span class="k">Atteso</span><span class="v num" id="t-atteso">0,00 €</span></div>
+      </div>
+      <div class="verdict v-ok" id="verdict"><span class="k">Differenza</span><span class="v num" id="t-diff">0,00 €</span></div>
+      <div class="hint" id="hint"></div>
+      <input type="text" id="nota" placeholder="Nota (turno, anomalie, resti…)">
+      <button class="primary" id="btn-send">Invia al titolare</button>
+      <div class="btnrow">
+        <button id="btn-copy">Copia messaggio</button>
+        <button id="btn-clear">Nuova chiusura</button>
+      </div>
+      <div class="textbox" id="msg-box">
+        <textarea id="msg-txt" readonly inputmode="none" aria-label="Messaggio da inviare"></textarea>
+        <p class="help" id="msg-help">Se non si è aperto nulla: tieni premuto sul testo, <b>Seleziona tutto</b>, <b>Copia</b>, poi incollalo su WhatsApp al titolare. La riga che inizia con <span class="num">CC1:</span> serve al registro: va inviata intera, senza modificarla. Meglio WhatsApp o mail: via SMS il messaggio può arrivare tagliato.</p>
+      </div>
+    </section>
+
+    <section class="card" id="card-sent">
+      <h2>Inviate da questo telefono <span class="meta" id="sent-meta"></span></h2>
+      <div class="hist" id="sent"></div>
+    </section>
+  </div>
+</div>
+
+<div class="stick v-ok" id="stick">
+  <div class="sv"><span class="sk">Differenza</span><span class="sd num" id="s-diff">0,00 €</span></div>
+  <button class="primary" id="btn-send-2">Invia</button>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* Parti comuni alle due pagine (Chiusura Cassa per chi chiude, Registro Casse per il titolare).
+   Espone un unico oggetto globale CC. Nessuna dipendenza. */
+window.CC = (function(){
+  "use strict";
+
+  // ---- dati di base -------------------------------------------------------
+  // importi in centesimi: niente errori di virgola mobile sui totali
+  var BANCONOTE = [50000,20000,10000,5000,2000,1000,500];
+  var MONETE    = [200,100,50,20,10,5,2,1];
+  var TAGLI     = BANCONOTE.concat(MONETE);
+  // key = identità stabile del negozio (finisce nei codici e negli id); nome = come lo si vede.
+  // Per rinominare un negozio si cambia solo "nome". Le chiavi non vanno mai cambiate.
+  var NEGOZI = [
+    {key:"bar-1",       nome:"Bar 1"},
+    {key:"bar-2",       nome:"Bar 2"},
+    {key:"tabaccheria", nome:"Tabaccheria"}
+  ];
+  function negozio(key){ for (var i = 0; i < NEGOZI.length; i++) if (NEGOZI[i].key === key) return NEGOZI[i]; return null; }
+  function nomeNegozio(key){ var n = negozio(key); return n ? n.nome : String(key); }
+
+  var eur = new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR"});
+  function $(id){ return document.getElementById(id); }
+  function fmt(c){ return eur.format((c||0)/100); }
+  function fmtSigned(c){ c = c||0; return (c>0?"+":c<0?"−":"") + eur.format(Math.abs(c)/100); }
+  function classeDiff(d){ return d === 0 ? "d-ok" : d > 0 ? "d-warn" : "d-neg"; }
+  function classeVerdict(d){ return d === 0 ? "v-ok" : d > 0 ? "v-warn" : "v-neg"; }
+
+  // accetta "394,20", "394.20", "1.234,50" e anche "394,20 €"
+  function centsFrom(str){
+    var s = String(str == null ? "" : str).replace(/[^0-9.,-]/g, "");
+    if (s.indexOf(",") > -1) s = s.replace(/\./g, "").replace(",", ".");
+    var v = parseFloat(s);
+    if (!isFinite(v)) return 0;
+    v = Math.round(v*100);
+    return Math.max(-1e9, Math.min(1e9, v));
+  }
+  function intOrZero(v, max){ var n = parseInt(v, 10); return isFinite(n) && n > 0 ? Math.min(n, max || 99999) : 0; }
+  function soldi(x){ x = Math.round(+x); return Number.isSafeInteger(x) && Math.abs(x) <= 1e9 ? x : 0; }
+
+  // ---- memoria locale: può mancare (file aperti da WhatsApp, modalità privata) ----
+  var storageOK = (function(){
+    try{ localStorage.setItem("cc-probe","1"); localStorage.removeItem("cc-probe"); return true; }catch(e){ return false; }
+  })();
+  function load(key, fallback){
+    try{ var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }catch(e){ return fallback; }
+  }
+  function save(key, value){
+    try{ localStorage.setItem(key, JSON.stringify(value)); return true; }catch(e){ return false; }
+  }
+  function escapeHtml(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function slug(s){
+    return String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036F]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"") || "x";
+  }
+  function isoLocale(d){ return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10); }
+  function oggiISO(){ return isoLocale(new Date()); }
+  function isoDi(ts){ var d = new Date(ts); return isFinite(d) ? isoLocale(d) : ""; }
+  function giorniFa(n){ var d = new Date(); d.setDate(d.getDate() - n); return isoLocale(d); }
+  // La data "di turno": una chiusura fatta alle 00:40 appartiene al giorno prima.
+  function dataTurno(){ var d = new Date(); if (d.getHours() < 6) d.setDate(d.getDate() - 1); return isoLocale(d); }
+  function isoValida(s){
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(s))) return false;
+    var p = s.split("-"), d = new Date(+p[0], +p[1]-1, +p[2]);
+    return d.getFullYear() === +p[0] && d.getMonth() === +p[1]-1 && d.getDate() === +p[2];
+  }
+  function dataEstesa(iso, conAnno){
+    if (!isoValida(iso)) return String(iso);
+    var p = iso.split("-"), d = new Date(+p[0], +p[1]-1, +p[2]);
+    var o = {weekday:"short", day:"numeric", month:"short"};
+    if (conAnno) o.year = "numeric";
+    return d.toLocaleDateString("it-IT", o);
+  }
+  function oraBreve(ts){ var d = new Date(ts); return isFinite(d) ? d.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"}) : ""; }
+  function idPer(shopKey, data){ return shopKey + "_" + data; }
+
+  // ---- calcolo ------------------------------------------------------------
+  // dettaglio = {centesimi: quantità}. Restituisce tutte le cifre derivate.
+  function calcola(dettaglio, fondo, atteso, uscite){
+    var contato = 0;
+    for (var k in dettaglio){ contato += intOrZero(dettaglio[k]) * (+k); }
+    fondo = soldi(fondo); atteso = soldi(atteso); uscite = soldi(uscite);
+    var netto = contato - fondo + uscite;
+    return {contato:contato, fondo:fondo, atteso:atteso, uscite:uscite, netto:netto, diff:netto - atteso};
+  }
+
+  // ---- tabella tagli ------------------------------------------------------
+  // Costruisce le righe dentro tbody e restituisce gli input. onEnterEnd: dove va il focus dopo l'ultimo taglio.
+  // Campi di testo con tastierino numerico: type=number su iPhone non ha il tasto Invio e accetta "1e3".
+  function costruisciTabella(tbody, onEnterEnd){
+    function sezione(nome){
+      var tr = document.createElement("tr"); tr.className = "sec";
+      tr.innerHTML = '<td colspan="3">' + nome + '</td>'; tbody.appendChild(tr);
+    }
+    function riga(cents){
+      var tr = document.createElement("tr"); tr.className = "zero";
+      tr.innerHTML =
+        '<td class="taglio num">' + fmt(cents) + '</td>' +
+        '<td class="qty"><input type="text" inputmode="numeric" pattern="[0-9]*" enterkeyhint="next" autocomplete="off" maxlength="4" data-cents="' + cents + '" aria-label="Quantità da ' + fmt(cents) + '"></td>' +
+        '<td class="subtot num">—</td>';
+      // tutta la riga porta il focus sul campo: al bancone si tocca dove capita
+      tr.addEventListener("click", function(e){ if (e.target.tagName !== "INPUT") tr.querySelector("input").focus(); });
+      tbody.appendChild(tr);
+    }
+    sezione("Banconote"); BANCONOTE.forEach(riga);
+    sezione("Monete");    MONETE.forEach(riga);
+    var inputs = Array.prototype.slice.call(tbody.querySelectorAll("input"));
+    inputs.forEach(function(inp, i){
+      inp.addEventListener("input", function(){ var v = inp.value.replace(/\D/g,"").slice(0,4); if (v !== inp.value) inp.value = v; });
+      // Invio / "avanti" passa al taglio successivo
+      inp.addEventListener("keydown", function(e){
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+        var next = inputs[i+1];
+        if (next){ next.focus(); next.select(); } else if (onEnterEnd) onEnterEnd();
+      });
+    });
+    return inputs;
+  }
+  function leggiDettaglio(inputs){
+    var d = {};
+    inputs.forEach(function(i){ var q = intOrZero(i.value, 9999); if (q) d[i.dataset.cents] = q; });
+    return d;
+  }
+  function scriviDettaglio(inputs, dettaglio){
+    inputs.forEach(function(i){ var q = dettaglio && intOrZero(dettaglio[i.dataset.cents], 9999); i.value = q ? String(q) : ""; });
+  }
+  function aggiornaSubtotali(inputs){
+    inputs.forEach(function(inp){
+      var q = intOrZero(inp.value, 9999), sub = q * (+inp.dataset.cents);
+      var tr = inp.closest("tr"), cell = tr.querySelector("td.subtot");
+      cell.textContent = q ? fmt(sub) : "—";
+      cell.classList.toggle("on", q > 0);
+      tr.classList.toggle("zero", q === 0);
+    });
+  }
+
+  // ---- codice chiusura ----------------------------------------------------
+  // Formato: CC<versione>:<payload>:<controllo>
+  //   payload   = base64url (senza "=") del JSON UTF-8 di un array posizionale:
+  //               [negozio(key), data, autore, fondo, atteso, uscite, [[centesimi,quantità],…], inviato(sec), nota]
+  //   controllo = FNV-1a 32 bit del payload (Math.imul, offset 0x811c9dc5), base36, 7 caratteri, minuscolo
+  // Alfabeto senza "." "/" "+" "=" e separatore ":" per non farsi trasformare in link o formattazione dalle app.
+  var VERSIONE = 1;
+  function utf8(str){ return new TextEncoder().encode(str); }
+  function b64url(bytes){
+    var bin = ""; for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+  }
+  function unb64url(s){
+    s = s.replace(/-/g,"+").replace(/_/g,"/"); while (s.length % 4) s += "=";
+    var bin = atob(s), out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return new TextDecoder().decode(out);
+  }
+  function fnv1a(str){
+    var h = 0x811c9dc5;
+    for (var i = 0; i < str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+    return h >>> 0;
+  }
+  function controllo(payload){ return ("0000000" + fnv1a(payload).toString(36)).slice(-7); }
+
+  function codifica(rec){
+    var q = Object.keys(rec.dettaglio||{}).map(Number).filter(function(c){ return TAGLI.indexOf(c) >= 0 && intOrZero(rec.dettaglio[c]); })
+      .sort(function(a,b){ return b-a; }).map(function(c){ return [c, intOrZero(rec.dettaglio[c], 9999)]; });
+    var arr = [rec.shopKey, rec.data, rec.autore||"", rec.fondo||0, rec.atteso||0, rec.uscite||0, q, Math.round((rec.inviato||rec.ts||Date.now())/1000), rec.nota||""];
+    var payload = b64url(utf8(JSON.stringify(arr)));
+    return "CC" + VERSIONE + ":" + payload + ":" + controllo(payload);
+  }
+
+  // Le app di messaggistica aggiungono caratteri invisibili e a capo: qui si tolgono prima di leggere.
+  var INVISIBILI = /[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF\u00AD]/g;
+
+  // Trova ogni "CC<n>:" nel testo e prova a leggere il codice che segue. Nessuna occorrenza viene ignorata
+  // in silenzio: ogni voce ha {rec} oppure {err}. raw = il frammento trovato, per mostrarlo.
+  function decodificaTutti(testo){
+    var t = String(testo||"").replace(INVISIBILI, "");
+    var out = [], re = /CC(\d{1,2}):(?=\s*[A-Za-z0-9_\-]{8})/g, m;
+    while ((m = re.exec(t))){
+      var ver = +m[1], inizio = m.index + m[0].length;
+      // prendi la sequenza che segue fatta di caratteri di codice, ":" e spazi/a capo (il codice può essere spezzato)
+      var seg = /^[A-Za-z0-9_\-:\s]*/.exec(t.slice(inizio))[0].split(/CC\d{1,2}:/)[0];   // non oltre il codice successivo
+      var fine = /:\s*((?:[A-Za-z0-9]\s*){7})(?![A-Za-z0-9_\-])/.exec(seg);
+      var raw = "CC" + ver + ":" + (fine ? seg.slice(0, fine.index + fine[0].length) : seg).replace(/\s+/g,"").slice(0, 40) + "…";
+      if (ver !== VERSIONE){ out.push({err:"Codice di versione " + ver + ": questa pagina legge la versione " + VERSIONE + ". Aggiorna il Registro Casse.", raw:raw}); continue; }
+      if (!fine){ out.push({err:"Codice incompleto: manca la parte finale. Chiedi di rimandare il messaggio intero.", raw:raw}); continue; }
+      var payload = seg.slice(0, fine.index).replace(/\s+/g,"");
+      if (!/^[A-Za-z0-9_\-]{8,}$/.test(payload)){ out.push({err:"Codice alterato: contiene caratteri estranei. Chiedi di rimandarlo.", raw:raw}); continue; }
+      out.push(decodificaUno(payload, fine[1].replace(/\s+/g,"").toLowerCase(), raw));
+      re.lastIndex = inizio + fine.index + fine[0].length;
+    }
+    return out;
+  }
+  function decodificaUno(payload, chk, raw){
+    if (controllo(payload) !== chk) return {err:"Codice incompleto o copiato male (il controllo non corrisponde). Chiedi di premere Reinvia.", raw:raw};
+    var a;
+    try{ a = JSON.parse(unb64url(payload)); }catch(e){ return {err:"Codice illeggibile", raw:raw}; }
+    if (!Array.isArray(a) || a.length < 7) return {err:"Codice illeggibile", raw:raw};
+    var shopKey = slug(String(a[0]||"")), data = String(a[1]||"");
+    if (!isoValida(data)) return {err:"Codice con data non valida", raw:raw};
+    var dettaglio = {};
+    if (Array.isArray(a[6])) a[6].forEach(function(p){
+      if (Array.isArray(p) && TAGLI.indexOf(+p[0]) >= 0 && intOrZero(p[1], 9999)) dettaglio[String(+p[0])] = intOrZero(p[1], 9999);
+    });
+    // dal codice si prendono solo i dati grezzi: le cifre derivate si ricalcolano qui
+    var c = calcola(dettaglio, a[3], a[4], a[5]);
+    var ora = Date.now(), inviato = Number.isSafeInteger(a[7]) ? a[7] * 1000 : 0;   // secondi Unix: oltre 1e9, non è un importo
+    if (!inviato || inviato > ora + 5*60e3 || ora - inviato > 366*864e5) inviato = ora;
+    var rec = {
+      id: idPer(shopKey, data), shopKey: shopKey, shop: nomeNegozio(shopKey), data: data,
+      autore: String(a[2]==null?"":a[2]).trim().slice(0,60), nota: String(a[8]==null?"":a[8]).trim().slice(0,300),
+      contato:c.contato, fondo:c.fondo, atteso:c.atteso, uscite:c.uscite, netto:c.netto, diff:c.diff,
+      dettaglio:dettaglio, inviato:inviato, ts:ora, origine:"codice", codice:"CC" + VERSIONE + ":" + payload + ":" + chk
+    };
+    return {rec:rec, raw:raw, negozioIgnoto: !negozio(shopKey)};
+  }
+
+  // ---- testo del messaggio -------------------------------------------------
+  // Solo caratteri "da SMS": niente ·, ×, − o spazi speciali, così il messaggio resta corto anche via SMS.
+  function euroTxt(c){ return fmt(c).replace(/ /g, " "); }
+  function euroSegno(c){ c = c||0; return (c>0?"+":c<0?"-":"") + euroTxt(Math.abs(c)); }
+  function testoMessaggio(rec, conCodice){
+    var r = ["CHIUSURA CASSA - " + (rec.shop||nomeNegozio(rec.shopKey)) + " - " + dataEstesa(rec.data, true)];
+    if (rec.autore) r.push("Chiuso da: " + rec.autore);
+    r.push("DIFFERENZA: " + euroSegno(rec.diff));
+    if (conCodice){ r.push("Codice per il registro (non modificare):"); r.push(rec.codice || codifica(rec)); }
+    r.push("---");
+    r.push("Contato: " + euroTxt(rec.contato));
+    if (rec.fondo)  r.push("Fondo cassa: -" + euroTxt(rec.fondo));
+    if (rec.uscite) r.push("Uscite: +" + euroTxt(rec.uscite));
+    r.push("Incasso contanti: " + euroTxt(rec.netto));
+    r.push("Atteso: " + euroTxt(rec.atteso));
+    var tagli = Object.keys(rec.dettaglio||{}).map(Number).sort(function(a,b){ return b-a; });
+    if (tagli.length){
+      r.push("Tagli: " + tagli.map(function(c){ return euroTxt(c) + " x" + rec.dettaglio[c]; }).join(", "));
+    }
+    if (rec.nota) r.push("Nota: " + rec.nota);
+    return r.join("\n");
+  }
+
+  // ---- interfaccia: toast, conferma, tema, copia, barra fissa ---------------
+  var toastTimer;
+  function toast(msg, lungo){
+    var t = $("toast"); if (!t) return;
+    t.textContent = msg; t.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(function(){ t.classList.remove("show"); }, lungo ? 5000 : 2800);
+  }
+
+  // Finestra di conferma propria: confirm() nei visualizzatori sandbox risponde "no" senza mostrare nulla.
+  function conferma(testo, opz){
+    opz = opz || {};
+    return new Promise(function(res){
+      var m = $("modal");
+      if (!m){
+        m = document.createElement("div"); m.id = "modal"; m.className = "modal"; m.setAttribute("role","dialog"); m.setAttribute("aria-modal","true");
+        m.innerHTML = '<div class="box"><p id="modal-txt"></p><div class="acts"><button type="button" id="modal-no">Annulla</button><button type="button" id="modal-si"></button></div></div>';
+        document.body.appendChild(m);
+      }
+      $("modal-txt").textContent = testo;
+      var si = $("modal-si"), no = $("modal-no");
+      si.textContent = opz.ok || "Conferma";
+      si.className = opz.pericoloso ? "danger" : "go";
+      function chiudi(v){ m.classList.remove("show"); si.onclick = no.onclick = m.onclick = null; document.removeEventListener("keydown", esc); res(v); }
+      function esc(e){ if (e.key === "Escape") chiudi(false); }
+      si.onclick = function(){ chiudi(true); };
+      no.onclick = function(){ chiudi(false); };
+      m.onclick = function(e){ if (e.target === m) chiudi(false); };
+      document.addEventListener("keydown", esc);
+      m.classList.add("show"); si.focus();
+    });
+  }
+
+  function attivaTema(btn, dopo){
+    if (!btn) return;
+    btn.onclick = function(){
+      var root = document.documentElement;
+      var scuro = root.getAttribute("data-theme") === "dark" ||
+        (!root.hasAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+      root.setAttribute("data-theme", scuro ? "light" : "dark");
+      if (dopo) dopo();
+    };
+  }
+
+  var touch = matchMedia("(pointer:coarse)").matches;
+
+  // Copia SINCRONA dentro il gesto dell'utente (execCommand): è l'unica che funziona ovunque, iframe compresi.
+  function copiaSync(testo, textarea){
+    try{
+      if (!textarea) return false;
+      var eraReadonly = textarea.readOnly;
+      textarea.value = testo; textarea.readOnly = false;
+      textarea.focus({preventScroll:true}); textarea.setSelectionRange(0, testo.length);
+      var ok = !!(document.execCommand && document.execCommand("copy"));
+      textarea.readOnly = eraReadonly; textarea.blur();
+      return ok;
+    }catch(e){ return false; }
+  }
+  // Copia con ripiego asincrono. Risolve true se copiato.
+  function copia(testo, textarea){
+    if (copiaSync(testo, textarea)) return Promise.resolve(true);
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(testo).then(function(){ return true; }, function(){ return false; });
+    return Promise.resolve(false);
+  }
+
+  // La barra fissa in basso si nasconde mentre si scrive: la tastiera la coprirebbe o la farebbe saltare.
+  function gestisciBarra(){
+    var timer;
+    var SEL = 'textarea, input:not([type=checkbox]):not([type=radio]):not([type=button]):not([type=date])';
+    function tastiera(el){ return !!(el && el.matches && el.matches(SEL)); }
+    document.addEventListener("focusin", function(e){ if (tastiera(e.target)){ clearTimeout(timer); document.body.classList.add("kb"); } });
+    document.addEventListener("focusout", function(){ clearTimeout(timer); timer = setTimeout(function(){ if (!tastiera(document.activeElement)) document.body.classList.remove("kb"); }, 150); });
+    if (window.visualViewport){
+      window.visualViewport.addEventListener("resize", function(){
+        document.body.classList.toggle("kb-vv", window.visualViewport.height < window.innerHeight * 0.75);
+      });
+    }
+  }
+
+  // Font web caricati senza bloccare il primo disegno, e solo in rete (in locale non servirebbero a nulla).
+  function caricaFont(){
+    if (!/^https?:$/.test(location.protocol)) return;
+    var l = document.createElement("link"); l.rel = "stylesheet";
+    l.href = "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap";
+    document.head.appendChild(l);
+  }
+
+  return {
+    BANCONOTE:BANCONOTE, MONETE:MONETE, NEGOZI:NEGOZI, TAGLI:TAGLI, VERSIONE:VERSIONE,
+    negozio:negozio, nomeNegozio:nomeNegozio, storageOK:storageOK, touch:touch,
+    $:$, fmt:fmt, fmtSigned:fmtSigned, classeDiff:classeDiff, classeVerdict:classeVerdict,
+    centsFrom:centsFrom, intOrZero:intOrZero, soldi:soldi, load:load, save:save, escapeHtml:escapeHtml, slug:slug,
+    oggiISO:oggiISO, isoDi:isoDi, dataTurno:dataTurno, isoValida:isoValida, dataEstesa:dataEstesa, oraBreve:oraBreve, giorniFa:giorniFa, idPer:idPer,
+    calcola:calcola, costruisciTabella:costruisciTabella, leggiDettaglio:leggiDettaglio, scriviDettaglio:scriviDettaglio, aggiornaSubtotali:aggiornaSubtotali,
+    codifica:codifica, decodificaTutti:decodificaTutti, testoMessaggio:testoMessaggio,
+    toast:toast, conferma:conferma, attivaTema:attivaTema, copia:copia, copiaSync:copiaSync, gestisciBarra:gestisciBarra, caricaFont:caricaFont
+  };
+})();
+
+</script>
+<script>
+(function(){
+  "use strict";
+  var $ = CC.$, K_BOZZA = "chiusura-cassa/bozza-dip", K_NOME = "chiusura-cassa/nome", K_PREF = "chiusura-cassa/pref", K_INVIATE = "chiusura-cassa/inviate";
+  CC.caricaFont(); CC.gestisciBarra();
+  if (!CC.storageOK){ $("storage-note").hidden = false; $("card-sent").hidden = true; }
+
+  // ---- testata ------------------------------------------------------------
+  var pref = CC.load(K_PREF, {});
+  var selShop = $("shop");
+  CC.NEGOZI.forEach(function(n){ var o = document.createElement("option"); o.value = n.key; o.textContent = n.nome; selShop.appendChild(o); });
+  selShop.value = CC.negozio(pref.shopKey) ? pref.shopKey : CC.NEGOZI[0].key;
+  $("data").value = CC.dataTurno();
+  $("nome").value = CC.load(K_NOME, "");
+  function sottotitolo(){
+    var d = CC.isoValida($("data").value) ? $("data").value : CC.dataTurno();
+    $("sub").textContent = "Chiusura del " + CC.dataEstesa(d, true) + " · " + CC.nomeNegozio(selShop.value);
+  }
+
+  // ---- conteggio ----------------------------------------------------------
+  var inputs = CC.costruisciTabella($("den"), function(){ $("atteso").focus(); });
+  var inviataId = null;   // id della chiusura già inviata da questo modulo: la bozza non va ripresa domani
+
+  function statoCorrente(){
+    var dettaglio = CC.leggiDettaglio(inputs);
+    var c = CC.calcola(dettaglio, CC.centsFrom($("fondo").value), CC.centsFrom($("atteso").value), CC.centsFrom($("uscite").value));
+    var data = CC.isoValida($("data").value) ? $("data").value : CC.dataTurno();
+    var key = selShop.value;
+    return {
+      id: CC.idPer(key, data), ts: Date.now(), inviato: Date.now(), shopKey: key, shop: CC.nomeNegozio(key), data: data,
+      autore: $("nome").value.trim().slice(0,60), nota: $("nota").value.trim().slice(0,300),
+      contato:c.contato, fondo:c.fondo, atteso:c.atteso, uscite:c.uscite, netto:c.netto, diff:c.diff, dettaglio:dettaglio
+    };
+  }
+  function moduloVuoto(){ var r = statoCorrente(); return !r.contato && !r.atteso && !r.fondo && !r.uscite && !r.nota; }
+
+  function ricalcola(){
+    CC.aggiornaSubtotali(inputs);
+    var r = statoCorrente();
+    $("t-contato").textContent = CC.fmt(r.contato);
+    $("t-netto").textContent = CC.fmt(r.netto);
+    $("t-atteso").textContent = CC.fmt(r.atteso);
+    $("t-diff").textContent = CC.fmtSigned(r.diff);
+    $("s-diff").textContent = CC.fmtSigned(r.diff);
+    $("verdict").className = "verdict " + CC.classeVerdict(r.diff);
+    $("stick").className = "stick " + CC.classeVerdict(r.diff);
+    $("hint").textContent =
+      r.atteso === 0 ? "Contato − fondo + uscite = incasso in contanti, confrontato con l'atteso."
+      : r.diff === 0 ? "Cassa in pari."
+      : r.diff > 0   ? "In cassa ci sono " + CC.fmt(r.diff) + " in più dell'atteso."
+                     : "Mancano " + CC.fmt(-r.diff) + " rispetto all'atteso.";
+    sottotitolo();
+    salvaBozza();
+    return r;
+  }
+
+  // ---- bozza: il conteggio in corso non si perde ----------------------------
+  function salvaBozza(){
+    var q = {}; inputs.forEach(function(i){ if (i.value) q[i.dataset.cents] = i.value; });
+    CC.save(K_BOZZA, {shopKey:selShop.value, data:$("data").value, q:q, fondo:$("fondo").value, atteso:$("atteso").value, uscite:$("uscite").value, nota:$("nota").value, inviataId:inviataId});
+  }
+  (function ripristina(){
+    var b = CC.load(K_BOZZA, null); if (!b) return;
+    var vuota = !b.q || !Object.keys(b.q).length;
+    if (vuota && !b.fondo && !b.atteso && !b.uscite && !b.nota) return;
+    // già inviata: si riparte puliti, la copia sta in "Inviate"
+    if (b.inviataId && b.inviataId === CC.idPer(b.shopKey, b.data)) return;
+    if (CC.negozio(b.shopKey)) selShop.value = b.shopKey;
+    if (CC.isoValida(b.data)) $("data").value = b.data;
+    if (b.q) inputs.forEach(function(i){ if (b.q[i.dataset.cents]) i.value = b.q[i.dataset.cents]; });
+    ["fondo","atteso","uscite","nota"].forEach(function(k){ if (b[k]) $(k).value = b[k]; });
+    if (b.data && b.data !== CC.dataTurno()) setTimeout(function(){ CC.toast("Ripreso il conteggio non inviato del " + CC.dataEstesa(b.data) + ": controlla la data prima di inviare.", true); }, 400);
+  })();
+
+  // ---- inviate (solo su questo telefono) ----------------------------------
+  function inviate(){
+    return CC.load(K_INVIATE, []).filter(function(e){ return e && e.rec && CC.isoValida(e.rec.data) && typeof e.testo === "string"; });
+  }
+  function registraInvio(rec, testo, stato){
+    // si conserva il testo esatto: "Reinvia" rimanda lo stesso identico codice
+    var lista = inviate().filter(function(e){ return e.rec.id !== rec.id; });
+    lista.unshift({rec:rec, testo:testo, stato:stato});
+    CC.save(K_INVIATE, lista.slice(0, 40));
+    renderInviate();
+  }
+  function aggiornaStato(id, stato){
+    var lista = inviate(); lista.forEach(function(e){ if (e.rec.id === id) e.stato = stato; });
+    CC.save(K_INVIATE, lista); renderInviate();
+  }
+  var STATI = {condivisa:"inviata", copiata:"copiata", annullata:"condivisione annullata"};
+  function renderInviate(){
+    var box = $("sent"), lista = inviate();
+    box.innerHTML = "";
+    $("sent-meta").textContent = lista.length ? (lista.length === 1 ? "1 chiusura" : lista.length + " chiusure") : "";
+    if (!lista.length){ box.innerHTML = '<div class="empty">Qui trovi le chiusure che hai già inviato, per rimandarle se servisse.</div>'; return; }
+    lista.forEach(function(e){
+      var r = e.rec;
+      var el = document.createElement("div"); el.className = "h-item";
+      el.innerHTML =
+        '<div><div class="h-when">' + CC.escapeHtml(CC.nomeNegozio(r.shopKey)) + ' · ' + CC.escapeHtml(CC.dataEstesa(r.data)) + (r.autore ? ' <span class="au">· ' + CC.escapeHtml(r.autore) + '</span>' : '') + '</div>' +
+        '<div class="h-sub">incasso <span class="num">' + CC.fmt(r.netto) + '</span> · atteso <span class="num">' + CC.fmt(r.atteso) + '</span> · ' + (STATI[e.stato] || "inviata") + ' ' + CC.oraBreve(r.inviato||r.ts) + '</div></div>' +
+        '<span class="pill ' + CC.classeDiff(r.diff) + '">' + CC.fmtSigned(r.diff) + '</span>' +
+        '<div class="h-act"><button class="ghost" type="button" data-act="resend">Reinvia</button><button class="ghost danger" type="button" data-act="del" aria-label="Togli dall\'elenco">✕</button></div>';
+      el.querySelector('[data-act="resend"]').onclick = function(){ invia(e.testo, r, true); };
+      el.querySelector('[data-act="del"]').onclick = function(){
+        CC.conferma("Togliere dall'elenco la chiusura di " + CC.nomeNegozio(r.shopKey) + " del " + CC.dataEstesa(r.data) + "?\nNon cambia nulla per il titolare.", {ok:"Togli", pericoloso:true})
+          .then(function(ok){ if (!ok) return; CC.save(K_INVIATE, inviate().filter(function(x){ return x.rec.id !== r.id; })); renderInviate(); });
+      };
+      box.appendChild(el);
+    });
+  }
+
+  // ---- invio ---------------------------------------------------------------
+  function pronto(rec){
+    if (rec.contato === 0 && rec.atteso === 0){ CC.toast("Inserisci il conteggio o l'incasso atteso"); inputs[0].focus(); return false; }
+    if (!rec.autore){ CC.toast("Scrivi il tuo nome in \"Chi chiude\""); $("nome").focus(); return false; }
+    return true;
+  }
+  function mostraMessaggio(testo){ $("msg-txt").value = testo; $("msg-box").classList.add("show"); }
+  function esitoCopia(copiato, prefisso){
+    CC.toast((prefisso ? prefisso + " " : "") + (copiato ? "Messaggio copiato: apri WhatsApp e incollalo al titolare." : "Tieni premuto sul testo qui sotto, Seleziona tutto, Copia."), true);
+    if (!copiato && !CC.touch){ var ta = $("msg-txt"); ta.focus(); ta.setSelectionRange(0, ta.value.length); }
+    $("msg-box").scrollIntoView({block:"nearest", behavior:"smooth"});
+  }
+  // Tutto dentro il gesto dell'utente e senza await prima: copia sincrona, poi il foglio di condivisione.
+  function invia(testo, rec, reinvio){
+    mostraMessaggio(testo);
+    var copiato = CC.copiaSync(testo, $("msg-txt"));
+    if (!reinvio){ registraInvio(rec, testo, copiato ? "copiata" : "annullata"); inviataId = rec.id; salvaBozza(); }
+    var dati = {text: testo};
+    if (CC.touch && navigator.share && (!navigator.canShare || navigator.canShare(dati))){
+      navigator.share(dati).then(function(){
+        aggiornaStato(rec.id, "condivisa");
+        CC.toast("Condiviso. Controlla che sia arrivato al titolare; poi puoi fare una nuova chiusura.", true);
+      }, function(err){
+        if (err && err.name === "AbortError"){ if (!copiato) aggiornaStato(rec.id, "annullata"); esitoCopia(copiato, "Condivisione annullata."); }
+        else esitoCopia(copiato);
+      });
+    } else {
+      esitoCopia(copiato);
+    }
+  }
+  function inviaCorrente(){
+    var rec = statoCorrente(); if (!pronto(rec)) return;
+    rec.codice = CC.codifica(rec);
+    invia(CC.testoMessaggio(rec, true), rec, false);
+  }
+  $("btn-send").onclick = inviaCorrente;
+  $("btn-send-2").onclick = inviaCorrente;
+  $("btn-copy").onclick = function(){
+    var rec = statoCorrente(); if (!pronto(rec)) return;
+    rec.codice = CC.codifica(rec);
+    var testo = CC.testoMessaggio(rec, true);
+    mostraMessaggio(testo);
+    var copiato = CC.copiaSync(testo, $("msg-txt"));
+    registraInvio(rec, testo, copiato ? "copiata" : "annullata"); inviataId = rec.id; salvaBozza();
+    esitoCopia(copiato);
+  };
+  function azzera(){
+    inputs.forEach(function(i){ i.value = ""; });
+    ["fondo","atteso","uscite","nota"].forEach(function(k){ $(k).value = ""; });
+    $("data").value = CC.dataTurno();
+    $("msg-box").classList.remove("show");
+    inviataId = null;
+    ricalcola(); if (!CC.touch) inputs[0].focus();
+  }
+  $("btn-clear").onclick = function(){
+    if (moduloVuoto() || inviataId) return azzera();   // vuoto o già inviato: niente da perdere
+    CC.conferma("Azzerare il conteggio in corso? Non è stato inviato.", {ok:"Azzera", pericoloso:true}).then(function(ok){ if (ok) azzera(); });
+  };
+
+  // ---- eventi --------------------------------------------------------------
+  document.addEventListener("input", function(e){
+    if (e.target.id === "nome"){ CC.save(K_NOME, e.target.value.trim()); return; }
+    if (e.target.tagName === "INPUT"){ if (inviataId && e.target.id !== "data") inviataId = null; ricalcola(); }
+  });
+  selShop.addEventListener("change", function(){ CC.save(K_PREF, {shopKey:selShop.value}); inviataId = null; ricalcola(); });
+  $("data").addEventListener("change", function(){ inviataId = null; ricalcola(); });
+  CC.attivaTema($("btn-theme"));
+
+  ricalcola();
+  renderInviate();
+})();
+</script>
+
+</body>
+</html>
